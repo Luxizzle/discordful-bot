@@ -14,11 +14,9 @@ function findType(value, options) {
 
   if ( !isNaN(Number(value)) ) return {type: 'number', value: new Number(value)};
 
-  if ( /<@!?\d+>/.test(value) ) return { type: 'user', value: new IUser(value, options)};
-
+  if ( IUser.test(value) ) return { type: 'user', value: new IUser(value, options, true)};
 
   return {type: 'string', value: value};
-
 }
 
 function seperate(content, options) {
