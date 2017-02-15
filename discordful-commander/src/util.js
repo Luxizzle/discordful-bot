@@ -21,11 +21,22 @@ function findType(value, options) {
 
 function seperate(content, options) {
   options = _.defaults(options || {}, {
+    preParse: function(v) { return v; },
+    postParse: function(args) {
+      args.forEach((arg, i) => {
+        args[i] = arg.match(/(?="?)[^"]*(?="?)/g)[0]; // converts "\"hi there\"" to "hi there"
+      });
+      return args;
+    },
     seperator: /(?:[^\s"]+|"[^"]*")+/g,
     split: false // use split instead of match
   });
 
-  return options.split ? content.trim().split(options.seperator) : content.trim().match(options.seperator);
+  var argsPre = options.preParse(content);
+  var argsMid = options.split ? argsPre.trim().split(options.seperator) : argsPre.trim().match(options.seperator);
+  var argsPost = options.postParse(argsMid); // this whole pre- post parse this is just to satisfy my insanity created with regex
+
+  return argsPost;
 }
 
 module.exports = {
