@@ -2,6 +2,7 @@ var low = require('lowdb');
 var _ = require('lodash');
 
 var Message = require('./Message');
+var Command = require('./Command');
 var util = require('./util');
 
 /*
@@ -26,6 +27,7 @@ class Commander {
 
     this.discordful = discordful || null;
     options.discordful = this.discordful;
+    options.self = this;
 
     this.db = this.options.db = low(options.db);
   }
@@ -34,6 +36,7 @@ class Commander {
     return this.parseRaw;
   }
 
+  // rewrite this because of the Command.options.ignorePrefix and -customPrefix things
   parseRaw(message) {
     var prefix = this.options.prefix;
     var content = message.content; // just get these for the ease of reading
@@ -55,10 +58,15 @@ class Commander {
     contentSplit[0].replace(prefix, ''); // Replace the prefix with an empty string
     var msg = new Message(message, contentSplit, this.options); // Generate our message object
 
-
-
-
     return message; // Return the original message for any plugins after this
+  }
+
+  command(trigger, options) {
+    return new Command(trigger, options, this.options);
+  }
+
+  reply(replyId, trigger, options) {
+    return new Command(trigger, options, this.options, replyId);
   }
 }
 

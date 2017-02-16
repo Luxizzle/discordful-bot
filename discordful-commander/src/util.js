@@ -39,7 +39,19 @@ function seperate(content, options) {
   return argsPost;
 }
 
+function genId() {
+  var id = '';
+  var chars = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789';
+
+  for (var i = 0; i < 8; i++) {
+    id += chars.charAt(Math.floor(Math.random() * chars.length));
+  }
+
+  return id;
+}
+
 module.exports = {
   seperate: seperate,
-  findType: findType
+  findType: findType,
+  genId: genId
 };
