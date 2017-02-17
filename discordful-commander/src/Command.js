@@ -1,4 +1,4 @@
-var genId = require('./util').genId;
+var sid = require('shortid');
 var _ = require('lodash');
 
 class Command {
@@ -6,11 +6,14 @@ class Command {
     this.uOptions = _.defaults(uOptions || {}, {
       params: '',
       desc: '',
+      ignoreTrigger: trigger === null,
       ignorePrefix: false,
-      customPrefix: false
     });
+
     this.replyId = replyId;
-    this.id = genId();
+    this.isReply = replyId ? true : false;
+
+    this.id = sid();
 
     this.dOptions = dOptions;
     this.self = dOptions.self;
@@ -23,7 +26,7 @@ class Command {
   }
 
   callback(fn, returnId = true) {
-    var fnId = genId();
+    var fnId = sid();
     this.callStack.push({
       fn: fn,
       id: fnId
@@ -38,6 +41,10 @@ class Command {
 
       return fn.id !== id;
     });
+  }
+
+  run() {
+
   }
 }
 
