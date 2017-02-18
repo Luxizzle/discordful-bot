@@ -5,13 +5,8 @@ class Command {
   constructor(trigger, uOptions, dOptions, replyId) {
     this.uOptions = _.defaults(uOptions || {}, {
       params: '',
-      desc: '',
-      ignoreTrigger: trigger === null,
-      ignorePrefix: false,
+      desc: ''
     });
-
-    this.replyId = replyId;
-    this.isReply = replyId ? true : false;
 
     this.id = sid();
 
@@ -19,10 +14,6 @@ class Command {
     this.self = dOptions.self;
 
     this.callStack = [];
-  }
-
-  reply(trigger, options) {
-    return this.self.reply(this.id, trigger, options);
   }
 
   callback(fn, returnId = true) {
