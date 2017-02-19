@@ -7,7 +7,7 @@ class CommandPrompt {
     this.options = _.defaults(options || {}, {
       type: 'input', // The type of question
       choices: [], // The choices
-      mention: command.dOptions.promptMention, // If bot needs to be mentioned
+      mention: false, // If bot needs to be mentioned
       abort: ['x', 'abort', 'exit'] // the content to abort the prompt
     });
 

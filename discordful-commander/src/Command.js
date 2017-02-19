@@ -1,8 +1,6 @@
 var sid = require('shortid');
 var _ = require('lodash');
 
-var CommandPrompt = require('./CommandPrompt');
-
 class Command {
   constructor(trigger, uOptions, dOptions) {
     this.uOptions = _.defaults(uOptions || {}, {

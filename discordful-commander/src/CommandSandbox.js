@@ -16,3 +16,5 @@ class CommandSandbox {
     return this.self._prompt(question, options, callback);
   }
 }
+
+module.exports = CommandSandbox;

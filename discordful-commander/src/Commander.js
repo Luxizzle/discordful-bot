@@ -67,7 +67,7 @@ class Commander {
 
   // rewrite this because of the Command.options.ignorePrefix and -customPrefix things
   parseRaw(message) {
-    var _this = this;
+    //var _this = this;
 
     this.registerUser(message.author); // Register the user in the database
 
