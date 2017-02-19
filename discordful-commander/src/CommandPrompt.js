@@ -1,6 +1,8 @@
 var sid = require('shortid');
 var _ = require('lodash');
 
+var Sandbox = require('./CommandSandbox');
+
 class CommandPrompt {
   constructor(question, options, callback = null) {
     var _this = this;
@@ -38,8 +40,11 @@ class CommandPrompt {
     });
   }
 
-  run() {
-
+  run(message) {
+    var sb = new Sandbox(this, message);
+    this.callStack.forEach((cb) => {
+      cb.apply(sb, [message].concat(message.contentSplit.slice(1)));
+    });
   }
 }
 

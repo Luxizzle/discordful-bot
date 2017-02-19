@@ -1,6 +1,8 @@
 var sid = require('shortid');
 var _ = require('lodash');
 
+var Sandbox = require('./CommandSandbox');
+
 class Command {
   constructor(trigger, uOptions, dOptions) {
     this.uOptions = _.defaults(uOptions || {}, {
@@ -36,8 +38,11 @@ class Command {
     });
   }
 
-  run() {
-
+  run(message) {
+    var sb = new Sandbox(this, message);
+    this.callStack.forEach((cb) => {
+      cb.apply(sb, [message].concat(message.contentSplit.slice(1)));
+    });
   }
 }
 
