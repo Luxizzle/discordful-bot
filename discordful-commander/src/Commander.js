@@ -3,6 +3,7 @@ var _ = require('lodash');
 
 var Message = require('./Message');
 var Command = require('./Command');
+var CommandPrompt = require('./CommandPrompt');
 var util = require('./util');
 
 /*
@@ -22,7 +23,8 @@ class Commander {
     this.options = _.defaults(options || {}, { // I could use Object.assign but i wanna be cool
       db: 'db.json',
       prefix: '/',
-      selfbot: false
+      selfbot: false,
+      promptMention: false
     });
 
     this.discordful = discordful || null;
@@ -30,6 +32,7 @@ class Commander {
     options.self = this;
 
     this.commands = [];
+    this.prompts = [];
 
     this.db = low(options.db);
     this.db
@@ -37,6 +40,25 @@ class Commander {
         users: []
       })
       .write();
+  }
+
+  registerUser(user) {
+    var _this = this;
+    var id = user.id;
+
+    var inDb = this.db
+      .get('users')
+      .find({ id: id })
+      .isUndefined()
+      .value();
+
+    if (!inDb) {
+      _this.db.get('users')
+        .push({
+          id: id
+        })
+        .write();
+    }
   }
 
   parse() {
@@ -47,6 +69,9 @@ class Commander {
   parseRaw(message) {
     var _this = this;
 
+    this.registerUser(message.author); // Register the user in the database
+
+    if (this.checkPrompt(message)) return message;
 
     var prefix = this.options.prefix;
     var content = message.content; // just get these for the ease of reading
@@ -101,13 +126,39 @@ class Commander {
     return message; // Return the original message for any plugins after this
   }
 
+  checkPrompt(message) {
+    var user = message.author;
+    var promptId = this.db
+      .get('users')
+      .find({ id: user.id })
+      .get('prompt');
+
+    if ( !promptId ) return false;
+
+    var content = message.content; // just get these for the ease of reading
+    var contentSplit = util.seperate(content, this.options);
+    if (contentSplit.length === 0) return message; // Shouldnt really happen, but just a check
+    var msg = new Message(message, contentSplit, this.options);
+
+
+  }
+
   command(trigger, options) {
     var cmd = new Command(trigger, options, this.options);
     this.commands.push({
       cmd: cmd,
       id: cmd.id,
-      reply: false
     });
+    return cmd;
+  }
+
+  _prompt(question, options, callback) {
+    var pmt = new CommandPrompt(question, options, callback);
+    this.prompts.push({
+      prompt: pmt,
+      id: pmt.id
+    });
+    return pmt;
   }
 }
 

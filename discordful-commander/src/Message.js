@@ -32,6 +32,13 @@ class Message {
   get isDm() { return this.isPrivate; }
 
   get displayUsername() { return this.message.displayUsername; }
+
+  reply(content = '', embed = null) {
+    return this.message.reply(content, null, false, embed);
+  }
+  send(content = '', embed = null) {
+    return this.message.channel.sendMessage(content, null, false, embed);
+  }
 }
 
 

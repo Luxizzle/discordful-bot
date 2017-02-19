@@ -1,23 +1,23 @@
 var sid = require('shortid');
 var _ = require('lodash');
 
-var CommandPrompt = require('./CommandPrompt');
-
-class Command {
-  constructor(trigger, uOptions, dOptions) {
-    this.uOptions = _.defaults(uOptions || {}, {
-      params: '',
-      desc: ''
+class CommandPrompt {
+  constructor(question, options, callback = null) {
+    var _this = this;
+    this.options = _.defaults(options || {}, {
+      type: 'input', // The type of question
+      choices: [], // The choices
+      mention: command.dOptions.promptMention, // If bot needs to be mentioned
+      abort: ['x', 'abort', 'exit'] // the content to abort the prompt
     });
 
     this.id = sid();
 
-    this.dOptions = dOptions;
-    this.self = dOptions.self;
+    if ( callback ) {
+      _this.callback(callback);
+    }
 
     this.callStack = [];
-
-    this.prompts = {};
   }
 
   callback(fn, returnId = true) {
@@ -43,5 +43,4 @@ class Command {
   }
 }
 
-module.exports = Command;
-
+module.exports = CommandPrompt;
