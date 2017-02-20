@@ -6,8 +6,7 @@ var IString = require('./MessageInterfaces/String');
 var IBoolean = require('./MessageInterfaces/Boolean');
 
 function findType(value, options) {
-  value = value.replace(/"/g, '');
-  var rvalue = value.trim().toLowerCase().replace(/"/g, '');
+  var rvalue = value.trim().toLowerCase();
 
   switch(rvalue) {
     case 'true':
@@ -16,9 +15,9 @@ function findType(value, options) {
       return new IBoolean(value, false, options);
   }
 
-  if ( !isNaN(Number(rvalue)) ) return new INumber(value, options);
-
   if ( IUser.test(rvalue) ) return new IUser(value, true, options);
+
+  if ( !isNaN(Number(rvalue)) ) return new INumber(value, options);
 
   return new IString(value, options);
 }
@@ -28,7 +27,7 @@ function seperate(content, options) {
     preParse: function(v) { return v; },
     postParse: function(args) {
       args.forEach((arg, i) => {
-        args[i] = arg.match(/(?="?)[^"]*(?="?)/g)[0]; // converts "\"hi there\"" to "hi there"
+        args[i] = arg.replace(/"/g, ''); // converts "\"hi there\"" to "hi there"
       });
       return args;
     },

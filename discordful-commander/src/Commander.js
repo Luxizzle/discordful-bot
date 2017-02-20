@@ -1,6 +1,8 @@
 var low = require('lowdb');
 var _ = require('lodash');
 
+var debug = require('debug')('df-cmder');
+
 var Message = require('./Message');
 var Command = require('./Command');
 var CommandPrompt = require('./CommandPrompt');
@@ -39,6 +41,8 @@ class Commander {
         users: []
       })
       .write();
+
+    debug('Created Commander object');
   }
 
   registerUser(user) {
@@ -57,6 +61,8 @@ class Commander {
           id: id
         })
         .write();
+
+      debug('Registered user: %s#%s', user.username, user.discriminator);
     }
   }
 
@@ -70,7 +76,7 @@ class Commander {
     return function(message, cb) {
       _this.registerUser(message.author); // Register the user in the database
 
-      if (_this.checkPrompt(message)) return cb(null, false, message);
+      if (_this.checkPrompt(message)) return cb(null, true, message);
 
       var prefix = _this.options.prefix;
       var content = message.content; // just get these for the ease of reading
@@ -89,20 +95,29 @@ class Commander {
 
       // Create the modified content to not include the prefix
       contentSplit[0] = contentSplit[0].replace(prefix, ''); // Replace the prefix with an empty string
+      if (contentSplit[0].trim() === '') contentSplit.shift();
+
       var msg = new Message(message, contentSplit, _this.options); // Generate our message object
 
       //console.log(msg);
+      var cmds = _this.commands.filter((c) => c.trigger === contentSplit[0]);
+      if (cmds.length === 0) return cb(null, false, message);
+
+      cmds.forEach((c) => {
+        c.cmd.run(msg);
+      });
 
       return cb(null, true, message); // Return the original message for any plugins after this
     };
   }
 
-  checkPrompt(message) {
+  checkPrompt(message) { // Might have to rethink activation based on time and server/channel
     var user = message.author;
     var promptId = this.db
       .get('users')
       .find({ id: user.id })
-      .get('prompt');
+      .get('prompt')
+      .value();
 
     if ( !promptId ) return false;
 
@@ -111,7 +126,11 @@ class Commander {
     if (contentSplit.length === 0) return message; // Shouldnt really happen, but just a check
     var msg = new Message(message, contentSplit, this.options);
 
+    var prompts = this.prompts.filter((p) => p.id == promptId);
+    if (!prompts[0]) { throw new Error(`Tried to active prompt with id ${promptId}, but it doesnt exist.`); }
+    prompts[0].run(msg);
 
+    return true;
   }
 
   command(trigger, options, callback) {
@@ -119,7 +138,11 @@ class Commander {
     this.commands.push({
       cmd: cmd,
       id: cmd.id,
+      trigger: trigger
     });
+
+    debug('Registered command: %s', trigger);
+
     return cmd;
   }
 
@@ -129,6 +152,7 @@ class Commander {
       prompt: pmt,
       id: pmt.id
     });
+
     return pmt;
   }
 }

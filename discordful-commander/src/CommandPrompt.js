@@ -43,7 +43,7 @@ class CommandPrompt {
   run(message) {
     var sb = new Sandbox(this, message);
     this.callStack.forEach((cb) => {
-      cb.apply(sb, [message].concat(message.args));
+      cb.fn.apply(sb, [message].concat(message.args));
     });
   }
 }
