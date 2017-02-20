@@ -51,7 +51,7 @@ class Commander {
       .isUndefined()
       .value();
 
-    if (!inDb) {
+    if (inDb) {
       _this.db.get('users')
         .push({
           id: id
