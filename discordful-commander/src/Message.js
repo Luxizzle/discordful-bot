@@ -1,6 +1,8 @@
 var chrono = require('chrono-node');
 var _ = require('lodash');
 
+var findType = require('./util').findType;
+
 class Message {
   constructor(msg, contentSplit, options) {
     options = _.defaults(options || {}, {
@@ -22,7 +24,15 @@ class Message {
     this.date = options.chrono.parseDate(this.content); // Get the date from chrono
     this.dates = options.chrono.parse(this.content); // More date stuff but expanded
 
+    this.args = this._parseInterfaces();
+  }
 
+  _parseInterfaces() {
+    var args = [];
+    this.contentSplit.forEach((val) => {
+      args.push(findType(val, this.options));
+    });
+    return args;
   }
 
   get isWebhook() { return this.author.isWebhook; }
@@ -43,6 +53,4 @@ class Message {
 
 
 
-module.exports = {
-  Message: Message
-};
+module.exports = Message;

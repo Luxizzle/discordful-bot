@@ -1,22 +1,26 @@
 var _ = require('lodash');
 
 var IUser = require('./MessageInterfaces/User');
+var INumber = require('./MessageInterfaces/Number');
+var IString = require('./MessageInterfaces/String');
+var IBoolean = require('./MessageInterfaces/Boolean');
 
 function findType(value, options) {
-  value = value.trim().toLowerCase();
+  value = value.replace(/"/g, '');
+  var rvalue = value.trim().toLowerCase().replace(/"/g, '');
 
-  switch(value) {
+  switch(rvalue) {
     case 'true':
-      return {type: 'boolean', value: true};
+      return new IBoolean(value, true, options);
     case 'false':
-      return {type: 'boolean', value: false};
+      return new IBoolean(value, false, options);
   }
 
-  if ( !isNaN(Number(value)) ) return {type: 'number', value: new Number(value)};
+  if ( !isNaN(Number(rvalue)) ) return new INumber(value, options);
 
-  if ( IUser.test(value) ) return { type: 'user', value: new IUser(value, options, true)};
+  if ( IUser.test(rvalue) ) return new IUser(value, true, options);
 
-  return {type: 'string', value: value};
+  return new IString(value, options);
 }
 
 function seperate(content, options) {
@@ -41,6 +45,5 @@ function seperate(content, options) {
 
 module.exports = {
   seperate: seperate,
-  findType: findType,
-  genId: genId
+  findType: findType
 };

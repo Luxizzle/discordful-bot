@@ -4,8 +4,9 @@ var _ = require('lodash');
 var Sandbox = require('./CommandSandbox');
 
 class Command {
-  constructor(trigger, uOptions, dOptions) {
-    this.uOptions = _.defaults(uOptions || {}, {
+  constructor(trigger, options, dOptions, callback = null) {
+    var _this = this;
+    this.options = _.defaults(options || {}, {
       params: '',
       desc: ''
     });
@@ -16,6 +17,7 @@ class Command {
     this.self = dOptions.self;
 
     this.callStack = [];
+    if ( callback ) { _this.callback(callback); }
 
     this.prompts = {};
   }
@@ -41,7 +43,7 @@ class Command {
   run(message) {
     var sb = new Sandbox(this, message);
     this.callStack.forEach((cb) => {
-      cb.apply(sb, [message].concat(message.contentSplit.slice(1)));
+      cb.apply(sb, [message].concat(message.args.slice(1)));
     });
   }
 }

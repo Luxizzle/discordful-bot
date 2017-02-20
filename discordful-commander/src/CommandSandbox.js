@@ -1,7 +1,7 @@
 class CommandSandbox {
   constructor(command, message) {
     this.command = command;
-    this.self = parent.command;
+    this.self = command.self;
     this.message = message;
   }
 
@@ -13,7 +13,7 @@ class CommandSandbox {
   }
 
   prompt(question, options, callback) {
-    return this.self._prompt(question, options, callback);
+    return this.self._prompt(question, options, this.command.dOptions, callback);
   }
 }
 

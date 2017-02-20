@@ -15,7 +15,6 @@ var util = require('./util');
  * @param {String, RegExp} options.prefix - The prefix for your commands
  * @param {String, Regexp} options.seperator - The seperator to seperate stuff
  * @param {Boolean} options.selfbot - IF true, bot only reacts to you
- * @param {Discordful} options
 */
 
 class Commander {
@@ -61,69 +60,41 @@ class Commander {
     }
   }
 
-  parse() {
-    return this.parseRaw;
+  parseRaw(message) {
+    return this.parse()(message);
   }
 
   // rewrite this because of the Command.options.ignorePrefix and -customPrefix things
-  parseRaw(message) {
-    //var _this = this;
+  parse() {
+    var _this = this;
+    return function(message, cb) {
+      _this.registerUser(message.author); // Register the user in the database
 
-    this.registerUser(message.author); // Register the user in the database
+      if (_this.checkPrompt(message)) return cb(null, false, message);
 
-    if (this.checkPrompt(message)) return message;
+      var prefix = _this.options.prefix;
+      var content = message.content; // just get these for the ease of reading
+      var contentSplit = util.seperate(content, _this.options);
+      if (contentSplit.length === 0) return cb(null, false, message); // Shouldnt really happen, but just a check
 
-    var prefix = this.options.prefix;
-    var content = message.content; // just get these for the ease of reading
-    var contentSplit = util.seperate(content, this.options);
-    if (contentSplit.length === 0) return message; // Shouldnt really happen, but just a check
+      // First check for the prefix, its a waste of recources to already parse the message
 
-    // First check for the prefix, its a waste of recources to already parse the message
+      var isPrefix = false;
+      if (typeof prefix === 'string') {
+        isPrefix = contentSplit[0].startsWith(prefix);
+      } else if (prefix instanceof RegExp) {
+        isPrefix = prefix.test(contentSplit[0]);
+      }
+      if (!isPrefix) return cb(null, false, message);
 
-    var isPrefix = false;
-    if (typeof prefix === 'string') {
-      isPrefix = contentSplit[0].startsWith(prefix);
-    } else if (prefix instanceof RegExp) {
-      isPrefix = prefix.test(contentSplit[0]);
-    }
-    if (!isPrefix) return message; // Message doesnt contain the prefix so just ignore it
-    // Returns the original message so that it doesnt mess with any plugins after this
+      // Create the modified content to not include the prefix
+      contentSplit[0] = contentSplit[0].replace(prefix, ''); // Replace the prefix with an empty string
+      var msg = new Message(message, contentSplit, _this.options); // Generate our message object
 
-    // Create the modified content to not include the prefix
-    contentSplit[0].replace(prefix, ''); // Replace the prefix with an empty string
-    var msg = new Message(message, contentSplit, this.options); // Generate our message object
+      //console.log(msg);
 
-    // NOTE:
-    // replies are out of the window and will now
-    // try something close to Inquirer.js's prompt feature
-
-    /*
-
-    var authorId = message.author.id;
-    var inDb = this.db
-      .get('users')
-      .find({ id: authorId })
-      .isUndefined()
-      .value();
-
-    if (!inDb) {
-      _this.db.get('users')
-        .push({
-          id: authorId
-        })
-        .write();
-    }
-
-
-    var content = message.content; // just get these for the ease of reading
-    var contentSplit = util.seperate(content, this.options);
-    if (contentSplit.length === 0) return message; // Shouldnt really happen, but just a check
-
-    var msg = new Message(message, contentSplit, this.options);
-
-    */
-
-    return message; // Return the original message for any plugins after this
+      return cb(null, true, message); // Return the original message for any plugins after this
+    };
   }
 
   checkPrompt(message) {
@@ -143,8 +114,8 @@ class Commander {
 
   }
 
-  command(trigger, options) {
-    var cmd = new Command(trigger, options, this.options);
+  command(trigger, options, callback) {
+    var cmd = new Command(trigger, options, this.options, callback);
     this.commands.push({
       cmd: cmd,
       id: cmd.id,

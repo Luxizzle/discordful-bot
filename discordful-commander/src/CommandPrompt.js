@@ -4,7 +4,7 @@ var _ = require('lodash');
 var Sandbox = require('./CommandSandbox');
 
 class CommandPrompt {
-  constructor(question, options, callback = null) {
+  constructor(question, options, dOptions, callback = null) {
     var _this = this;
     this.options = _.defaults(options || {}, {
       type: 'input', // The type of question
@@ -13,13 +13,13 @@ class CommandPrompt {
       abort: ['x', 'abort', 'exit'] // the content to abort the prompt
     });
 
+    this.dOptions = dOptions;
+    this.self = dOptions.self;
+
     this.id = sid();
 
-    if ( callback ) {
-      _this.callback(callback);
-    }
-
     this.callStack = [];
+    if ( callback ) { _this.callback(callback); }
   }
 
   callback(fn, returnId = true) {
@@ -43,7 +43,7 @@ class CommandPrompt {
   run(message) {
     var sb = new Sandbox(this, message);
     this.callStack.forEach((cb) => {
-      cb.apply(sb, [message].concat(message.contentSplit.slice(1)));
+      cb.apply(sb, [message].concat(message.args));
     });
   }
 }
