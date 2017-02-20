@@ -30,7 +30,6 @@ class Message {
   _parseInterfaces() {
     var args = [];
     this.contentSplit.forEach((val) => {
-      console.log(val);
       args.push(findType(val, this.options));
     });
     return args;

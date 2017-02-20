@@ -58,7 +58,9 @@ class Commander {
     if (inDb) {
       _this.db.get('users')
         .push({
-          id: id
+          id: id,
+          username: user.username,
+          discriminator: user.discriminator
         })
         .write();
 
@@ -74,6 +76,12 @@ class Commander {
   parse() {
     var _this = this;
     return function(message, cb) {
+      if (message.author.id === _this.discordful.User.id && _this.options.selfbot === false) {
+        return cb(null, false, message);
+      } else if (message.author.id !== _this.discordful.User.id && _this.options.selfbot === true) {
+        return cb(null, false, message);
+      }
+
       _this.registerUser(message.author); // Register the user in the database
 
       if (_this.checkPrompt(message)) return cb(null, true, message);
@@ -99,7 +107,6 @@ class Commander {
 
       var msg = new Message(message, contentSplit, _this.options); // Generate our message object
 
-      //console.log(msg);
       var cmds = _this.commands.filter((c) => c.trigger === contentSplit[0]);
       if (cmds.length === 0) return cb(null, false, message);
 

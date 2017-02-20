@@ -2,6 +2,8 @@ class CommandSandbox {
   constructor(command, message) {
     this.command = command;
     this.self = command.self;
+    this.client = this.self.discordful;
+    this.db = this.self.db;
     this.message = message;
   }
 
