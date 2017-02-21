@@ -1,5 +1,5 @@
 var Discordful = require('discordful');
-var Commander = require('./discordful-commander');
+var Commander = require('discordful-commander');
 
 var stringifyObject = require('stringify-object');
 

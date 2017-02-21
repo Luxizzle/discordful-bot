@@ -9,10 +9,11 @@
     "dev": "DEBUG=df,bot,bot-*,df-cmder node index.js"
   },
   "author": "",
-  "license": "ISC",
+  "license": "MIT",
   "dependencies": {
     "debug": "^2.6.1",
     "discordful": "^1.0.3",
+    "discordful-commander": "^1.0.0",
     "glob": "^7.1.1",
     "lodash": "^4.17.4"
   }
