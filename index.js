@@ -13,14 +13,6 @@ var cmder = new Commander(bot, {
   prefix: 'k/'
 });
 
-
-bot.event('GATEWAY_READY')
-  .use(function() {
-    bot.discordie.Users.fetchMembers()
-      .then(() => debug("Fetched all members"))
-      .catch((err) => {throw err;});
-  });
-
 cmder.command('ping', {
   desc: 'Check if the bot is active'
 }, function(msg) {
@@ -49,7 +41,6 @@ cmder.command('servers', {}, function() {
 });
 
 bot.event('MESSAGE_CREATE')
-  .use(function(e) { return e.message; })
   .use(cmder.parse())
   .use(function(success, message) {
     if (!success) return message;
