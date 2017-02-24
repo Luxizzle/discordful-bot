@@ -1,7 +1,8 @@
 var Discordful = require('discordful');
 var Commander = require('discordful-commander');
+var glob = require('glob');
+var requireUncached = require('require-uncached');
 
-var stringifyObject = require('stringify-object');
 
 var debug = require('debug')('bot');
 var debugMSG = require('debug')('bot-msg');
@@ -13,32 +14,19 @@ var cmder = new Commander(bot, {
   prefix: 'k/'
 });
 
-cmder.command('ping', {
-  desc: 'Check if the bot is active'
-}, function(msg) {
-  this.reply('Pong!');
-});
+cmder.reload = function() {
+  cmder.commands = [];
+  cmder.prompts = [];
 
-cmder.command('test', {
-  desc: 'Test the message parsing ya'
-}, function(msg) {
-  var m = '```';
-  msg.args.slice(1).forEach((v) => {
-    m += `${v.raw} - ${v.type}\n`;
+  glob('./commands/**/*.js', {}, function(err, files) {
+    if (err) throw err;
+    files.forEach((file) => {
+      debug('Loading command file: ' + file);
+      requireUncached(file)(cmder);
+    });
   });
-  m += '```';
-  this.reply(m);
-});
-
-cmder.command('servers', {}, function() {
-  this.reply('```json\n'+stringifyObject(this.client.Guilds.map(v => { return {
-    name: v.name,
-    id: v.id,
-    members: v.members.length
-  }; }), {
-    indent: ' '
-  })+'\n```');
-});
+};
+cmder.reload();
 
 bot.event('MESSAGE_CREATE')
   .use(cmder.parse())
